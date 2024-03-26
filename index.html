@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+        <title>Babylon.js sample code</title>
+
+        <!-- Babylon.js -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js"></script>
+        <script src="https://assets.babylonjs.com/generated/Assets.js"></script>
+        <script src="https://cdn.babylonjs.com/recast.js"></script>
+        <script src="https://cdn.babylonjs.com/ammo.js"></script>
+        <script src="https://cdn.babylonjs.com/havok/HavokPhysics_umd.js"></script>
+        <script src="https://cdn.babylonjs.com/cannon.js"></script>
+        <script src="https://cdn.babylonjs.com/Oimo.js"></script>
+        <script src="https://cdn.babylonjs.com/earcut.min.js"></script>
+        <script src="https://cdn.babylonjs.com/babylon.js"></script>
+        <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+        <script src="https://cdn.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
+        <script src="https://cdn.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
+        <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.js"></script>
+        <script src="https://cdn.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
+        <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
+        <script src="https://cdn.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
+
+        <style>
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            #renderCanvas {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
+            
+            #canvasZone {
+                width: 100%;
+                height: 100%;
+            }
+        </style>
+    </head>
+<body>
+    <div id="canvasZone"><canvas id="renderCanvas"></canvas></div>
+    <script>
+        var canvas = document.getElementById("renderCanvas");
+
+        var startRenderLoop = function (engine, canvas) {
+            engine.runRenderLoop(function () {
+                if (sceneToRender && sceneToRender.activeCamera) {
+                    sceneToRender.render();
+                }
+            });
+        }
+
+        var engine = null;
+        var scene = null;
+        var sceneToRender = null;
+        var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true,  disableWebGL2Support: false}); };
+        var createScene = async function () {
+    // This creates a basic Babylon Scene object (non-mesh)
+    var scene = new BABYLON.Scene(engine);
+
+    // This creates and positions a free camera (non-mesh)
+    var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 220, -220), scene);
+    camera.keysUpward.push(69); //increase elevation
+    camera.keysDownward.push(81); //decrease elevation
+    camera.keysUp.push(87); //forwards 
+    camera.keysDown.push(83); //backwards
+    camera.keysLeft.push(65);
+    camera.keysRight.push(68);
+
+    // This targets the camera to scene origin
+    camera.setTarget(BABYLON.Vector3.Zero());
+
+    // This attaches the camera to the canvas
+    camera.attachControl(canvas, true);
+
+    // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
+    var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+
+    // Default intensity is 1. Let's dim the light a small amount
+    light.intensity = 0.7;
+
+    const regions = [
+        {
+            "id": 0,
+            "name": "Астраханская область",
+            "x": 226,
+            "y": 397
+        },
+        {
+            "id": 1,
+            "name": "Волгоградская область",
+            "x": 100,
+            "y": 291
+        },
+        {
+            "id": 2,
+            "name": "Самарская область",
+            "x": 274,
+            "y": 79
+        },
+        {
+            "id": 3,
+            "name": "Саратовская область",
+            "x": 145,
+            "y": 160
+        },
+        {
+            "id": 4,
+            "name": "Ульяновская область",
+            "x": 212,
+            "y": 35
+        }
+    ];
+
+    const internal_shipments = [
+        {
+            "cargo": "Материалы строительные",
+            "shipments": [
+                {
+                    "region": 4,
+                    "volume": 305.0
+                },
+                {
+                    "region": 2,
+                    "volume": 6556.0
+                },
+                {
+                    "region": 3,
+                    "volume": 968.1
+                },
+                {
+                    "region": 1,
+                    "volume": 125.0
+                },
+                {
+                    "region": 0,
+                    "volume": 5.9
+                }
+            ]
+        },
+        {
+            "cargo": "Светлые нефтепродукты",
+            "shipments": [
+                {
+                    "region": 4,
+                    "volume": 0.0
+                },
+                {
+                    "region": 2,
+                    "volume": 89.4
+                },
+                {
+                    "region": 3,
+                    "volume": 0
+                },
+                {
+                    "region": 1,
+                    "volume": 45.1
+                },
+                {
+                    "region": 0,
+                    "volume": 152.8
+                }
+            ]
+        },
+        {
+            "cargo": "Зерно",
+            "shipments": [
+                {
+                    "region": 4,
+                    "volume": 0.0
+                },
+                {
+                    "region": 2,
+                    "volume": 0.0
+                },
+                {
+                    "region": 3,
+                    "volume": 0.0
+                },
+                {
+                    "region": 1,
+                    "volume": 0.0
+                },
+                {
+                    "region": 0,
+                    "volume": 0.0
+                }
+            ]
+        }
+    ];
+
+    const external_shipments = [
+        {
+            "cargo": "Материалы строительные",
+            "shipments": [
+                {
+                    "from": 4,
+                    "to": 2,
+                    "direct": 10.3,
+                    "reverse": 108.4
+                },
+                {
+                    "from": 2,
+                    "to": 3,
+                    "direct": 21.5,
+                    "reverse": 19
+                },
+                {
+                    "from": 3,
+                    "to": 1,
+                    "direct": 0,
+                    "reverse": 64.1
+                },
+                {
+                    "from": 1,
+                    "to": 0,
+                    "direct": 3.8,
+                    "reverse": 152.8
+                }
+            ]
+        },
+        {
+            "cargo": "Светлые нефтепродукты",
+            "shipments": [
+                {
+                    "from": 4,
+                    "to": 2,
+                    "direct": 0,
+                    "reverse": 0
+                },
+                {
+                    "from": 2,
+                    "to": 3,
+                    "direct": 50.3,
+                    "reverse": 0
+                },
+                {
+                    "from": 3,
+                    "to": 1,
+                    "direct": 6.3,
+                    "reverse": 0
+                },
+                {
+                    "from": 1,
+                    "to": 0,
+                    "direct": 1.6,
+                    "reverse": 1.3
+                }
+            ]
+        },
+        {
+            "cargo": "Зерно",
+            "shipments": [
+                {
+                    "from": 4,
+                    "to": 2,
+                    "direct": 0,
+                    "reverse": 0
+                },
+                {
+                    "from": 2,
+                    "to": 3,
+                    "direct": 9.2,
+                    "reverse": 0
+                },
+                {
+                    "from": 3,
+                    "to": 1,
+                    "direct": 25.1,
+                    "reverse": 0
+                },
+                {
+                    "from": 1,
+                    "to": 0,
+                    "direct": 43.1,
+                    "reverse": 0
+                }
+            ]
+        }
+    ];
+
+    var mapMaterial = new BABYLON.StandardMaterial("mapMaterial", scene);
+	mapMaterial.diffuseTexture = new BABYLON.Texture("https://johnnylittlepunch.github.io/Primer/map.png", scene);
+    mapMaterial.alpha = 1;
+
+    const mapWidth = 345;
+    const halfWidth = mapWidth / 2.0;
+    const mapHeight = 440
+    const halfHeight = mapHeight / 2.0;
+    var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: mapWidth, height: mapHeight}, scene);
+	ground.material = mapMaterial;
+
+    var titlePlane = BABYLON.MeshBuilder.CreatePlane("plane", {width: mapWidth/2.0, height: mapWidth / 8.0},  scene);
+    titlePlane.position = new BABYLON.Vector3(0, mapHeight/2.0, 3*mapWidth/4.0);
+    var titleAdvancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateForMesh(titlePlane);
+    var titleButton = BABYLON.GUI.Button.CreateSimpleButton("button", "Пример транспортной диаграммы\n\nперемещение: клавиши QEWSAD\n+  мышка");
+    titleButton.color = "black";
+    titleButton.fontSize = 100;
+    titleButton.background = "white";
+    titleAdvancedTexture.addControl(titleButton);
+
+    var tableMaterial = new BABYLON.StandardMaterial("tableMaterial", scene);
+	tableMaterial.diffuseTexture = new BABYLON.Texture("https://johnnylittlepunch.github.io/Primer/table.png", scene);
+    tableMaterial.alpha = 1;
+    var tableWidth =  mapHeight
+    var tableHeight =  mapHeight * 1020.0 / 1920.0; 
+    var tablePlane = BABYLON.MeshBuilder.CreatePlane("plane", {width: tableWidth, height: tableHeight},  scene);
+    tablePlane.material=tableMaterial;
+    tablePlane.rotateAround(new BABYLON.Vector3(0, 0, 0), new BABYLON.Vector3(0, 1, 0), -Math.PI/2);
+    tablePlane.position = new BABYLON.Vector3(-3*mapWidth/4.0, mapHeight / 14.0  + tableHeight / 2.0, 0);
+
+    var tableButtonPlane = BABYLON.MeshBuilder.CreatePlane("tableButtonPlane", {width: mapWidth/2.0, height: mapHeight / 14.0},  scene);
+    tableButtonPlane.rotateAround(new BABYLON.Vector3(0, 0, 0), new BABYLON.Vector3(0, 1, 0), -Math.PI/2);
+    tableButtonPlane.position = new BABYLON.Vector3(-3*mapWidth/4.0, 0, 0);
+    var tableButtonAdvancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateForMesh(tableButtonPlane);
+    var tableButton = BABYLON.GUI.Button.CreateSimpleButton("tableButton", "Скрыть таблицу");
+    tableButton.color = "black";
+    tableButton.fontSize = 100;
+    tableButton.background = "Gainsboro";
+    tableButton.cornerRadius  = 500;
+    tableButtonAdvancedTexture.addControl(tableButton);
+    tableButton.onPointerDownObservable.add(()=> {
+            tablePlane.setEnabled((tablePlane.isEnabled() ? false : true));
+            tableButton.textBlock.text  =  tablePlane.isEnabled() ? "Скрыть таблицу": "Показать таблицу";
+        });
+
+    const step = 32;
+    const offset = 5;
+    const minSize = 1;
+    const maxSize = 30;
+
+    for(let ci =  0;  ci < external_shipments.length; ++ci) {
+        var item = external_shipments[ci];
+
+        var shipments = item.shipments;
+        var totalVolume = 0;
+        for(let si = 0; si < shipments.length; ++si) {
+            totalVolume += shipments[si].direct + shipments[si].reverse;
+        }
+        var cargoMaterial = new BABYLON.StandardMaterial('cargoMaterial', scene);
+        cargoMaterial.diffuseColor = new BABYLON.Color3.FromHSV(30 + 300 / external_shipments.length * ci, 0.7, 0.9);
+        cargoMaterial.emissiveColor = new BABYLON.Color3(0.1,0.1,0.1);
+        cargoMaterial.alpha = 0.8;
+
+        var cargoPlane = BABYLON.MeshBuilder.CreatePlane("plane", {width: mapWidth/2.0, height: mapHeight / 14.0},  scene);
+        cargoPlane.position = new BABYLON.Vector3(0, 50 * (ci + 0.25), 3*mapWidth/4.0);
+        var cargoAdvancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateForMesh(cargoPlane);
+        var cargoButton = BABYLON.GUI.Button.CreateSimpleButton("button", item.cargo);
+        cargoButton.color = (new BABYLON.Color3.FromHSV(30 + 300 / external_shipments.length * ci, 0.7, 0.6)).toHexString();
+        cargoButton.fontSize = 100;
+        cargoButton.background = "Gainsboro";
+        cargoAdvancedTexture.addControl(cargoButton);
+
+        if(totalVolume > 0) {
+            for(let si = 0; si < shipments.length; ++si) {
+                var shipment = shipments[si];
+                if(shipment.direct > 0) {
+                    var fromPoint = new BABYLON.Vector3((regions[shipment.from].x - halfWidth), step * (ci  +  1),  -(regions[shipment.from].y - halfHeight));
+                    var toPoint = new BABYLON.Vector3((regions[shipment.to].x - halfWidth), step * (ci  +  1),  -(regions[shipment.to].y - halfHeight));
+                    var direction = toPoint.subtract(fromPoint);
+                    var centerPoint = fromPoint.add(direction.multiplyByFloats(0.5, 0.5, 0.5));
+                    var boxWidth = minSize;
+                    var boxHeight = minSize +  maxSize * shipment.direct / totalVolume;
+                    var boxDepth = direction.length() - 2 * (maxSize + offset);
+                    var box = BABYLON.MeshBuilder.CreateBox("box", {width: boxWidth, height: boxHeight, depth: boxDepth}, scene);
+                    box.material = cargoMaterial;
+                    box.position = centerPoint;
+                    var focusPoint = direction.add(box.position);
+                    var focusQuat = BABYLON.Quaternion.LookRotation(focusPoint.subtract(box.position))
+                    focusQuat = new BABYLON.Quaternion(0, focusQuat.y, 0, focusQuat.w);
+                    box.rotationQuaternion = focusQuat;
+
+                    const result = await BABYLON.SceneLoader.ImportMeshAsync("", "https://johnnylittlepunch.github.io/Primer/", "pyramid.gltf", scene);
+                    var pyramid =  result.meshes[0];
+                    for (let mesh of pyramid.getChildMeshes()) {
+                        mesh.material = cargoMaterial;
+                    }
+                    pyramid.scaling = new BABYLON.Vector3(boxWidth, boxHeight, offset)
+                    var n = direction.normalizeToNew();
+                    var l = boxDepth  / 2.0;
+                    var v  =  n.multiplyByFloats(l, l, l);
+                    pyramid.position = centerPoint.add(v);
+                    var focusPoint2 = direction.add(pyramid.position);
+                    var focusQuat2 = BABYLON.Quaternion.LookRotation(focusPoint2.subtract(pyramid.position))
+                    focusQuat2 = new BABYLON.Quaternion(0, focusQuat2.y, 0, focusQuat2.w);
+                    pyramid.rotationQuaternion = focusQuat2
+                    pyramid.rotateAround(pyramid.position, new BABYLON.Vector3(0, 1, 0), Math.PI);
+
+                    var plane = BABYLON.MeshBuilder.CreatePlane("plane", {width: maxSize / 2.0, height: maxSize / 4.0},  scene);
+                    plane.position = pyramid.position.add(new BABYLON.Vector3(maxSize/2.0, 0, 0));
+                    var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateForMesh(plane);
+                    var button1 = BABYLON.GUI.Button.CreateSimpleButton("button", String(shipment.direct));
+                    button1.color = "black";
+                    button1.fontSize = 200;
+                    button1.background = "Azure";
+                    advancedTexture.addControl(button1);
+
+                }
+                if(shipment.reverse > 0) {
+                    var fromPoint = new BABYLON.Vector3((regions[shipment.from].x - halfWidth), step * (ci  +  1),  -(regions[shipment.from].y - halfHeight));
+                    var toPoint = new BABYLON.Vector3((regions[shipment.to].x - halfWidth), step * (ci  +  1),  -(regions[shipment.to].y - halfHeight));
+                    var direction = toPoint.subtract(fromPoint);
+                    var centerPoint = fromPoint.add(direction.multiplyByFloats(0.5, 0.5, 0.5));
+                    var boxWidth = minSize;
+                    var boxHeight = minSize + maxSize * shipment.reverse / totalVolume;
+                    var boxDepth = direction.length() - 2 * (maxSize + offset);
+                    var box = BABYLON.MeshBuilder.CreateBox("box", {width: boxWidth, height: boxHeight, depth: boxDepth}, scene);
+                    box.material = cargoMaterial;
+                    box.position = centerPoint;
+                    var focusPoint = direction.add(box.position);
+                    var focusQuat = BABYLON.Quaternion.LookRotation(focusPoint.subtract(box.position))
+                    focusQuat = new BABYLON.Quaternion(0, focusQuat.y, 0, focusQuat.w);
+                    box.rotationQuaternion = focusQuat;
+
+                    const result = await BABYLON.SceneLoader.ImportMeshAsync("", "https://johnnylittlepunch.github.io/Primer/", "pyramid.gltf", scene);
+                    var pyramid =  result.meshes[0];
+                    for (let mesh of pyramid.getChildMeshes()) {
+                        mesh.material = cargoMaterial;
+                    }
+                    pyramid.scaling = new BABYLON.Vector3(boxWidth, boxHeight, offset)
+                    var n = direction.normalizeToNew();
+                    var l = boxDepth  / 2.0;
+                    var v  =  n.multiplyByFloats(-l, -l, -l);
+                    pyramid.position = centerPoint.add(v);
+                    var focusPoint2 = direction.add(pyramid.position);
+                    var focusQuat2 = BABYLON.Quaternion.LookRotation(focusPoint2.subtract(pyramid.position))
+                    focusQuat2 = new BABYLON.Quaternion(0, focusQuat2.y, 0, focusQuat2.w);
+                    pyramid.rotationQuaternion = focusQuat2
+                    //pyramid.rotateAround(pyramid.position, new BABYLON.Vector3(0, 1, 0), Math.PI);
+
+                    box.rotateAround(pyramid.position, direction, Math.PI / 2);
+                    pyramid.rotateAround(pyramid.position, direction, Math.PI / 2);
+
+                    var plane = BABYLON.MeshBuilder.CreatePlane("plane", {width: maxSize / 2.0, height: maxSize / 4.0},  scene);
+                    plane.position = pyramid.position.add(new BABYLON.Vector3(maxSize/2.0, 0, 0));
+                    var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateForMesh(plane);
+                    var button1 = BABYLON.GUI.Button.CreateSimpleButton("button", String(shipment.reverse));
+                    button1.color = "black";
+                    button1.fontSize = 200;
+                    button1.background = "MistyRose";
+                    advancedTexture.addControl(button1);
+ 
+                }
+            }
+        }
+    }
+
+    for(let ci =  0;  ci < internal_shipments.length; ++ci) {
+        var item = internal_shipments[ci];
+        var shipments = item.shipments;
+        var totalVolume = 0;
+        for(let si = 0; si < shipments.length; ++si) {
+            totalVolume += shipments[si].volume;
+        }
+        var cargoMaterial = new BABYLON.StandardMaterial('cargoMaterial', scene);
+        cargoMaterial.diffuseColor = new BABYLON.Color3.FromHSV(30 + 300 / external_shipments.length * ci, 0.7, 0.9);
+        cargoMaterial.emissiveColor = new BABYLON.Color3(0.1,0.1,0.1);
+        cargoMaterial.alpha = 0.8;
+        if(totalVolume > 0) {
+            for(let si = 0; si < shipments.length; ++si) {
+                var shipment = shipments[si];
+                if(shipment.volume > 0) {
+                    var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: minSize + maxSize * shipment.volume / totalVolume, segments: 32}, scene);
+                    sphere.position = new BABYLON.Vector3((regions[shipment.region].x - halfWidth), step * (ci  +  1),  -(regions[shipment.region].y - halfHeight));
+                    sphere.material = cargoMaterial;
+
+                    var plane = BABYLON.MeshBuilder.CreatePlane("plane", {width: maxSize / 2, height: maxSize / 4.0},  scene);
+                    plane.parent = sphere;
+                    plane.position.x = maxSize / 2.0 + minSize;
+                    var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateForMesh(plane);
+                    var button1 = BABYLON.GUI.Button.CreateSimpleButton("button", String(shipment.volume));
+                    //button1.width = 1;
+                    //button1.height = 1;
+                    button1.color = "black";
+                    button1.fontSize = 200;
+                    button1.background = "Ivory";
+                    /*button1.onPointerUpObservable.add(function() {
+                        //alert("you did it!");
+                    });*/
+                    advancedTexture.addControl(button1);
+
+                }
+            }
+        }
+    }
+
+    //var defaultXRExperience = await scene.createDefaultXRExperienceAsync();
+    const xrHelper = await scene.createDefaultXRExperienceAsync({
+        floorMeshes: [ground]
+    });
+
+    return scene;
+};
+
+BABYLON.Quaternion.LookRotation = function(pos, up=BABYLON.Vector3.Up()) 
+{
+    let result = BABYLON.Matrix.Zero();
+    BABYLON.Matrix.LookAtLHToRef(BABYLON.Vector3.Zero(), pos, up, result);
+    result.invert();
+    return BABYLON.Quaternion.FromRotationMatrix(result);
+};
+                window.initFunction = async function() {
+                    
+                    
+                    
+                    var asyncEngineCreation = async function() {
+                        try {
+                        return createDefaultEngine();
+                        } catch(e) {
+                        console.log("the available createEngine function failed. Creating the default engine instead");
+                        return createDefaultEngine();
+                        }
+                    }
+
+                    window.engine = await asyncEngineCreation();
+        if (!engine) throw 'engine should not be null.';
+        startRenderLoop(engine, canvas);
+        window.scene = createScene();};
+        initFunction().then(() => {scene.then(returnedScene => { sceneToRender = returnedScene; });
+                            
+        });
+
+        // Resize
+        window.addEventListener("resize", function () {
+            engine.resize();
+        });
+    </script>
+</body>
+</html>
